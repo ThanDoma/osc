@@ -1,8 +1,11 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from qpsk_mode import qpsk_mod
+import numpy as np
+
 from Design import raisedCosineDesign
-def osc(y_1):
+from qpsk_mode import qpsk_mod
+
+
+def osc(y_1, r):
 # input
     y1 = y_1
 
@@ -156,23 +159,25 @@ def osc(y_1):
 
     N=len(check) # Количество передаваемых символов должно быть небольшим и адекватным
 
-    fc=10; L=8 # несущая частота и коэффициент передискретизации
+    fc=1; L=8 # несущая частота и коэффициент передискретизации
 
     a = np.array(y1) # однородные случайные символы от 0 до 1
     # модулируйте исходные символы с помощью QPSK
     qpsk_result= qpsk_mod(a,fc,L)
         # Импульсная форма модулированных сигналов путем свертки с помощью RC-фильтра
-    alpha = 0.3; span = 10 # Альфа-фильтр RC и диапазон фильтрации в символах
-    b = raisedCosineDesign(alpha,span, L) # Формирователь RC-импульсов
+    alpha = r; span =  10 # Альфа-фильтр RC и диапазон фильтрации в символ
+    b = raisedCosineDesign(alpha,span, L) # Формирователь RC-импульсов 
 
-    iRC_qpsk=np.convolve(qpsk_result['I(t)'],b,mode='valid')#RC - QPSK I(t)
+    iRC_qpsk=np.convolve(qpsk_result['I(t)'],b,mode='valid') #RC - QPSK I(t)
     qRC_qpsk= np.convolve(qpsk_result['Q(t)'],b,mode='valid') #RC - QPSK Q(t)
-
+    
+    # iRC_qpsk=np.convolve(1, b, mode='valid')
+    # qRC_qpsk= np.convolve(1, b, mode='valid')
     fig1, axs = plt.subplots(1, 1)
 
-    axs.plot(iRC_qpsk,qRC_qpsk)# RC-образный QPSK
+    axs.plot(iRC_qpsk/10,qRC_qpsk/10)# RC-образный QPSK
 
-    axs.set_title(r"QPSK, RC $\alpha$="+str(alpha))
+    axs.set_title(r"QPSK, $\alpha$="+str(alpha))
     axs.set_xlabel('I(t)');axs.set_ylabel('Q(t)')
 
     plt.show()
